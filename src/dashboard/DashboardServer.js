@@ -269,13 +269,13 @@ class DashboardServer {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wick Broadcast Command Center</title>
+    <title>Wick Broadcast Celestial Command</title>
     <style>
         :root {
             color-scheme: dark;
             font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #060714;
-            color: #F9FAFB;
+            background: #050312;
+            color: #F8FAFF;
         }
 
         * {
@@ -285,124 +285,190 @@ class DashboardServer {
         body {
             margin: 0;
             min-height: 100vh;
-            background: radial-gradient(circle at top, rgba(88, 101, 242, 0.35), transparent 55%),
-                        radial-gradient(circle at bottom, rgba(37, 99, 235, 0.18), transparent 60%),
-                        #05060f;
             display: flex;
             justify-content: center;
-            padding: 32px 16px 48px;
+            padding: 36px 16px 60px;
+            position: relative;
+            overflow-x: hidden;
+            background: radial-gradient(circle at 20% -20%, rgba(99, 102, 241, 0.35), transparent 55%),
+                        radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.25), transparent 60%),
+                        linear-gradient(140deg, #03010A 0%, #04061B 55%, #050312 100%);
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            width: 1600px;
+            height: 1600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 65%);
+            filter: blur(80px);
+            opacity: 0.6;
+            z-index: -3;
+        }
+
+        body::before {
+            top: -1200px;
+            left: -800px;
+        }
+
+        body::after {
+            bottom: -1100px;
+            right: -900px;
+        }
+
+        .starlight {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -2;
+            background-image: radial-gradient(2px 2px at 20% 20%, rgba(255, 255, 255, 0.12), transparent),
+                              radial-gradient(1.5px 1.5px at 70% 40%, rgba(255, 255, 255, 0.18), transparent),
+                              radial-gradient(1px 1px at 40% 80%, rgba(148, 163, 184, 0.35), transparent);
+            animation: twinkle 12s infinite linear;
+        }
+
+        @keyframes twinkle {
+            from { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+            50% { transform: translate3d(-10px, 20px, 0) scale(1.05); opacity: 1; }
+            to { transform: translate3d(15px, -15px, 0) scale(0.98); opacity: 0.7; }
         }
 
         .page {
-            width: min(1200px, 100%);
+            width: min(1220px, 100%);
             position: relative;
         }
 
-        .glow {
+        .aurora {
             position: absolute;
-            inset: -80px -120px auto;
-            height: 280px;
-            background: radial-gradient(circle, rgba(88, 101, 242, 0.65), rgba(88, 101, 242, 0));
+            inset: -140px 0 auto;
+            height: 320px;
+            background: radial-gradient(circle at 15% 20%, rgba(192, 132, 252, 0.35), transparent 55%),
+                        radial-gradient(circle at 70% 10%, rgba(59, 130, 246, 0.4), transparent 60%);
             filter: blur(60px);
-            opacity: 0.6;
+            opacity: 0.75;
             pointer-events: none;
         }
 
         header.hero {
             position: relative;
-            background: linear-gradient(135deg, rgba(88, 101, 242, 0.18), rgba(17, 24, 39, 0.95));
-            border: 1px solid rgba(99, 102, 241, 0.35);
-            border-radius: 20px;
-            padding: 28px 32px;
+            border-radius: 28px;
+            padding: 36px;
             overflow: hidden;
-            box-shadow: 0 25px 60px rgba(17, 24, 39, 0.45);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(37, 99, 235, 0.12));
+            border: 1px solid rgba(148, 163, 255, 0.22);
+            box-shadow: 0 35px 65px rgba(8, 11, 30, 0.55);
         }
 
         .hero::before {
             content: '';
             position: absolute;
-            inset: -60px;
-            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.25), transparent 60%);
+            inset: -120px;
+            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.55), transparent 55%);
+            opacity: 0.35;
+            filter: blur(40px);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -140px;
+            right: -80px;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.28), rgba(99, 102, 241, 0));
+            filter: blur(35px);
             opacity: 0.8;
         }
 
-        .hero-content {
+        .hero-grid {
             position: relative;
             display: grid;
-            gap: 16px;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .hero-header {
+            display: grid;
+            gap: 14px;
         }
 
         .badge {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            font-size: 12px;
-            letter-spacing: 0.08em;
+            width: fit-content;
+            padding: 8px 18px;
+            border-radius: 999px;
             text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 11px;
             font-weight: 600;
             color: #C7D2FE;
-            padding: 6px 14px;
-            border-radius: 999px;
-            background: linear-gradient(120deg, rgba(99, 102, 241, 0.35), rgba(59, 130, 246, 0.35));
-            backdrop-filter: blur(8px);
+            background: linear-gradient(120deg, rgba(99, 102, 241, 0.55), rgba(14, 165, 233, 0.35));
+            border: 1px solid rgba(148, 163, 255, 0.35);
+            backdrop-filter: blur(10px);
         }
 
         .hero h1 {
             margin: 0;
-            font-size: clamp(28px, 4vw, 40px);
+            font-size: clamp(30px, 5vw, 46px);
             font-weight: 700;
-            color: #F4F4FF;
+            color: #EEF2FF;
         }
 
         .hero p {
             margin: 0;
-            color: #9CA3AF;
-            max-width: 620px;
-            line-height: 1.6;
+            max-width: 640px;
+            color: rgba(226, 232, 240, 0.75);
+            line-height: 1.7;
         }
 
-        .hero-meta {
+        .status-band {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px;
-            margin-top: 8px;
+            gap: 14px;
         }
 
-        .meta-tile {
-            background: rgba(15, 23, 42, 0.55);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 12px;
-            padding: 12px 16px;
+        .status-chip {
+            position: relative;
+            padding: 14px 18px;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            min-width: 180px;
             display: grid;
-            gap: 4px;
-            min-width: 160px;
+            gap: 6px;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 255, 0.08);
         }
 
-        .meta-label {
-            font-size: 12px;
+        .status-chip span.label {
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            color: rgba(148, 163, 255, 0.8);
             text-transform: uppercase;
-            color: #94A3B8;
-            letter-spacing: 0.08em;
         }
 
-        .meta-value {
+        .status-chip span.value {
             font-size: 16px;
             font-weight: 600;
-            color: #E0E7FF;
+            color: #F4F4FF;
         }
 
         main.content {
-            margin-top: 32px;
+            margin-top: 36px;
             display: grid;
-            gap: 24px;
+            gap: 28px;
         }
 
         .section {
-            background: rgba(9, 13, 24, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.12);
-            border-radius: 20px;
-            padding: 24px 28px;
-            box-shadow: 0 20px 45px rgba(2, 6, 23, 0.45);
+            background: rgba(6, 11, 25, 0.92);
+            border: 1px solid rgba(99, 102, 241, 0.16);
+            border-radius: 26px;
+            padding: 32px;
+            box-shadow: 0 28px 60px rgba(5, 8, 20, 0.65);
+            backdrop-filter: blur(18px);
         }
 
         .section-header {
@@ -411,103 +477,195 @@ class DashboardServer {
             align-items: baseline;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 26px;
         }
 
         .section-header h2 {
             margin: 0;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
-            color: #E0E7FF;
+            color: #E5E7FF;
         }
 
         .section-subtitle {
-            color: #64748B;
+            color: rgba(148, 163, 184, 0.8);
             font-size: 14px;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 20px;
         }
 
         .stat-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
-            border: 1px solid rgba(99, 102, 241, 0.14);
-            border-radius: 16px;
-            padding: 18px;
-            display: grid;
-            gap: 8px;
             position: relative;
+            padding: 20px 18px;
+            border-radius: 22px;
+            background: linear-gradient(160deg, rgba(30, 41, 59, 0.92), rgba(17, 24, 39, 0.88));
+            border: 1px solid rgba(99, 102, 241, 0.26);
             overflow: hidden;
+            display: grid;
+            gap: 10px;
         }
 
-        .stat-card::after {
+        .stat-card::before {
             content: '';
             position: absolute;
-            inset: auto -40% 10% 50%;
-            height: 120px;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.32), transparent 70%);
-            opacity: 0.75;
+            inset: -60% 40% auto -25%;
+            height: 220px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.35), transparent 65%);
+            opacity: 0.65;
         }
 
         .stat-label {
-            font-size: 13px;
-            color: #94A3B8;
+            font-size: 12px;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            color: rgba(191, 219, 254, 0.78);
+            z-index: 1;
         }
 
         .stat-value {
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 700;
-            color: #F8FAFC;
+            color: #FFFFFF;
+            z-index: 1;
         }
 
         .stat-trend {
             font-size: 13px;
-            color: #6EE7B7;
+            color: rgba(148, 163, 184, 0.78);
+            z-index: 1;
+        }
+
+        .panels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+        }
+
+        .holo-panel {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(148, 163, 255, 0.2);
+            border-radius: 22px;
+            padding: 22px;
+            display: grid;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .holo-panel::after {
+            content: '';
+            position: absolute;
+            inset: 12px -80px -80px 30%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.22), transparent 70%);
+            opacity: 0.6;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 255, 0.78);
+        }
+
+        .panel-value {
+            font-size: 19px;
+            font-weight: 600;
+            color: #F4F4FF;
+            z-index: 1;
+        }
+
+        .language-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 1;
+        }
+
+        .language-pill {
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.2);
+            color: #BFDBFE;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: 1px solid rgba(148, 163, 255, 0.3);
+        }
+
+        .operations-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .operations-split {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .glass-card {
+            background: rgba(10, 16, 32, 0.75);
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.18);
+            padding: 22px;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 255, 0.08);
+            display: grid;
+            gap: 16px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 16px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
             overflow: hidden;
-            border-radius: 14px;
+            border-radius: 16px;
+            background: rgba(2, 6, 23, 0.55);
         }
 
-        table thead {
-            background: rgba(30, 41, 59, 0.75);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 12px;
+        thead {
+            background: rgba(30, 41, 59, 0.6);
         }
 
-        table th, table td {
-            padding: 14px;
+        th, td {
+            padding: 14px 16px;
             text-align: left;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+            font-size: 13px;
         }
 
-        table tbody tr {
-            background: rgba(15, 23, 42, 0.55);
+        th {
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 600;
+            color: rgba(148, 163, 255, 0.78);
         }
 
-        table tbody tr:nth-child(even) {
-            background: rgba(15, 23, 42, 0.45);
+        tbody tr:nth-child(odd) {
+            background: rgba(8, 12, 32, 0.45);
         }
 
-        table tbody tr:hover {
-            background: rgba(99, 102, 241, 0.18);
-            transition: background 0.2s ease;
+        tbody tr:nth-child(even) {
+            background: rgba(6, 10, 28, 0.35);
+        }
+
+        tbody td {
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        tbody tr:hover {
+            background: rgba(59, 130, 246, 0.14);
         }
 
         .empty {
             text-align: center;
-            color: #94A3B8;
-            padding: 18px;
+            color: rgba(148, 163, 184, 0.75);
         }
 
         .status-indicator {
@@ -521,86 +679,16 @@ class DashboardServer {
             height: 10px;
             border-radius: 50%;
             display: inline-block;
+            box-shadow: 0 0 12px currentColor;
         }
 
-        .status-online {
-            background: #34D399;
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.65);
-        }
-
-        .status-offline {
-            background: #F87171;
-            box-shadow: 0 0 8px rgba(248, 113, 113, 0.55);
-        }
-
-        .status-unknown {
-            background: #FBBF24;
-            box-shadow: 0 0 8px rgba(251, 191, 36, 0.45);
-        }
-
-        .dual-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-        }
-
-        .insight-grid {
-            display: grid;
-            gap: 16px;
-        }
-
-        .insight-tile {
-            background: rgba(15, 23, 42, 0.62);
-            border: 1px solid rgba(148, 163, 184, 0.14);
-            border-radius: 14px;
-            padding: 16px 18px;
-        }
-
-        .insight-label {
-            font-size: 12px;
-            color: #94A3B8;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .insight-value {
-            margin-top: 6px;
-            font-size: 18px;
-            color: #E2E8F0;
-            font-weight: 600;
-        }
-
-        .language-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(59, 130, 246, 0.2);
-            color: #BFDBFE;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
-
-        .language-list {
-            margin-top: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .language-pill {
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(148, 163, 184, 0.16);
-            color: #E2E8F0;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+        .status-online { color: #34D399; background: currentColor; }
+        .status-offline { color: #F87171; background: currentColor; }
+        .status-unknown { color: #FBBF24; background: currentColor; }
 
         .load-list {
             display: grid;
-            gap: 14px;
+            gap: 16px;
         }
 
         .load-item {
@@ -610,76 +698,76 @@ class DashboardServer {
 
         .load-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            color: #CBD5F5;
             font-size: 13px;
+            color: rgba(191, 219, 254, 0.9);
         }
 
         .load-bar {
-            height: 10px;
+            height: 12px;
             border-radius: 999px;
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.82);
             overflow: hidden;
-            position: relative;
         }
 
         .load-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.95));
             border-radius: 999px;
-            transition: width 0.35s ease;
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.85), rgba(99, 102, 241, 0.95));
+            transition: width 0.4s ease;
         }
 
         footer.page-footer {
+            margin-top: 32px;
             text-align: center;
-            color: #6B7280;
             font-size: 12px;
-            margin-top: 24px;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.14em;
+            color: rgba(148, 163, 184, 0.75);
         }
 
         @media (max-width: 768px) {
             body {
-                padding: 20px 12px 32px;
+                padding: 24px 12px 48px;
             }
 
             header.hero {
-                padding: 24px;
+                padding: 28px;
             }
 
             .section {
-                padding: 20px;
+                padding: 24px;
             }
 
             table {
                 display: block;
                 overflow-x: auto;
-                border-radius: 12px;
             }
         }
     </style>
 </head>
 <body>
+    <div class="starlight"></div>
     <div class="page">
-        <div class="glow"></div>
+        <div class="aurora"></div>
         <header class="hero">
-            <div class="hero-content">
-                <span class="badge">Live Command Center</span>
-                <h1>Wick Broadcast Command Center</h1>
-                <p>راقب بث الرسائل من بوتاتك على ديسكورد بدقة متناهية. تحكم كامل بحالة البث، أداء العملاء، وصحة المنظومة في تجربة فاخرة من الدرجة الأولى.</p>
-                <div class="hero-meta">
-                    <div class="meta-tile">
-                        <span class="meta-label">Version</span>
-                        <span class="meta-value" id="version-label">${escape(data.version)}</span>
+            <div class="hero-grid">
+                <div class="hero-header">
+                    <span class="badge">Live Command Bridge</span>
+                    <h1>Wick Broadcast Celestial Command</h1>
+                    <p>لوحة تحكم مستقبلية تضع قوة بث رسائلك بين يديك. راقب أداء الأسطول، استشعر حالة العملاء، وتابع نبض المنظومة بلغة فاخرة مستوحاة من رحلات الفضاء.</p>
+                </div>
+                <div class="status-band">
+                    <div class="status-chip">
+                        <span class="label">Version</span>
+                        <span class="value" id="version-label">${escape(data.version)}</span>
                     </div>
-                    <div class="meta-tile">
-                        <span class="meta-label">Default Language</span>
-                        <span class="meta-value"><span class="language-badge" id="default-language">${escape(data.language.default)}</span></span>
+                    <div class="status-chip">
+                        <span class="label">Default Language</span>
+                        <span class="value" id="default-language">${escape(data.language.default)}</span>
                     </div>
-                    <div class="meta-tile">
-                        <span class="meta-label">Last Updated</span>
-                        <span class="meta-value" id="last-updated">Just now</span>
+                    <div class="status-chip">
+                        <span class="label">Last Sync</span>
+                        <span class="value" id="last-updated">Just now</span>
                     </div>
                 </div>
             </div>
@@ -689,48 +777,48 @@ class DashboardServer {
             <section class="section">
                 <div class="section-header">
                     <h2>Mission Metrics</h2>
-                    <span class="section-subtitle">مؤشرات الأداء اللحظية لرحلات البث الخاصة بك</span>
+                    <span class="section-subtitle">نبض الحملات اللحظي، بأناقة الدرجة الأولى</span>
                 </div>
                 <div class="stats-grid">
                     <article class="stat-card">
                         <span class="stat-label">Total Broadcasts</span>
                         <span class="stat-value" id="total-broadcasts">${formatNumber(data.stats.totalBroadcasts)}</span>
-                        <span class="stat-trend">إجمالي الحملات المكتملة</span>
+                        <span class="stat-trend">إجمالي الرحلات الناجزة</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Members Reached</span>
                         <span class="stat-value" id="total-members">${formatNumber(data.stats.totalMembersTargeted)}</span>
-                        <span class="stat-trend">مستلمو الرسائل عبر جميع العملاء</span>
+                        <span class="stat-trend">مستلمو الإشعارات عبر الأسطول</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Success Rate</span>
                         <span class="stat-value" id="success-rate">${data.stats.successRate || 0}%</span>
-                        <span class="stat-trend">نسبة التسليم الناجح</span>
+                        <span class="stat-trend">نسبة التسليم المؤكّد</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Successful Deliveries</span>
                         <span class="stat-value" id="success-total">${formatNumber(data.stats.totalSuccess || 0)}</span>
-                        <span class="stat-trend">عدد الرسائل المرسلة بنجاح</span>
+                        <span class="stat-trend">رسائل وصلت لوجهتها</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Failed Attempts</span>
                         <span class="stat-value" id="failure-total">${formatNumber(data.stats.totalFailures || 0)}</span>
-                        <span class="stat-trend">محاولات لم تصل إلى الأعضاء</span>
+                        <span class="stat-trend">محاولات تحتاج مراجعة</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Active Clients</span>
                         <span class="stat-value" id="client-count">${formatNumber(data.clients.length)}</span>
-                        <span class="stat-trend">عدد العملاء الجاهزين للبث</span>
+                        <span class="stat-trend">عدد العملاء المتأهبين</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Active Broadcasts</span>
                         <span class="stat-value" id="active-job-count">${formatNumber(data.activeJobs.length)}</span>
-                        <span class="stat-trend">جلسات البث الجارية الآن</span>
+                        <span class="stat-trend">جلسات البث الجارية</span>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">System Uptime</span>
                         <span class="stat-value" id="bot-uptime">${data.stats.uptimeFormatted}</span>
-                        <span class="stat-trend">مدة تشغيل النظام منذ الإقلاع</span>
+                        <span class="stat-trend">مدة التشغيل منذ الإقلاع</span>
                     </article>
                 </div>
             </section>
@@ -738,106 +826,101 @@ class DashboardServer {
             <section class="section">
                 <div class="section-header">
                     <h2>Broadcast Insights</h2>
-                    <span class="section-subtitle">نظرة فورية على آخر الأحداث</span>
+                    <span class="section-subtitle">إحصاءات فورية لتوجّه الأسطول</span>
                 </div>
-                <div class="dual-grid">
-                    <div class="insight-grid">
-                        <div class="insight-tile">
-                            <span class="insight-label">Last Broadcast</span>
-                            <span class="insight-value" id="last-broadcast-time">${escape(lastBroadcastTime)}</span>
-                        </div>
-                        <div class="insight-tile">
-                            <span class="insight-label">Last Message Preview</span>
-                            <span class="insight-value" id="last-broadcast-message">${escape(lastBroadcastMessage)}</span>
-                        </div>
+                <div class="panels-grid">
+                    <div class="holo-panel">
+                        <span class="panel-title">Last Broadcast</span>
+                        <span class="panel-value" id="last-broadcast-time">${escape(lastBroadcastTime)}</span>
                     </div>
-                    <div class="insight-grid">
-                        <div class="insight-tile">
-                            <span class="insight-label">Language Availability</span>
-                            <div class="language-list" id="language-list">${languagePills}</div>
-                        </div>
-                        <div class="insight-tile">
-                            <span class="insight-label">Dashboard Security</span>
-                            <span class="insight-value">${this.apiKey ? '🔐 Protected with API Key' : '⚠️ Running without API protection'}</span>
-                        </div>
+                    <div class="holo-panel">
+                        <span class="panel-title">Last Message Preview</span>
+                        <span class="panel-value" id="last-broadcast-message">${escape(lastBroadcastMessage)}</span>
+                    </div>
+                    <div class="holo-panel">
+                        <span class="panel-title">Language Availability</span>
+                        <div class="language-list" id="language-list">${languagePills}</div>
+                    </div>
+                    <div class="holo-panel">
+                        <span class="panel-title">Dashboard Security</span>
+                        <span class="panel-value">${this.apiKey ? '🔐 Protected with API Key' : '⚠️ Public Access (configure DASHBOARD_API_KEY)'}</span>
                     </div>
                 </div>
             </section>
 
             <section class="section">
                 <div class="section-header">
-                    <h2>Connected Clients</h2>
-                    <span class="section-subtitle">حالة عملائك المتعددين وتوزيع الحمل</span>
+                    <h2>Fleet Operations</h2>
+                    <span class="section-subtitle">إدارة العملاء وتوزيع الأحمال عبر الفضاء الرقمي</span>
                 </div>
-                <div class="dual-grid">
-                    <div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Tag</th>
-                                    <th>ID</th>
-                                    <th>Status</th>
-                                    <th>Ping</th>
-                                    <th>Load</th>
-                                    <th>Guilds</th>
-                                    <th>Ready At</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clients-body">
-                                ${clientRows}
-                            </tbody>
-                        </table>
+                <div class="operations-grid">
+                    <div class="glass-card">
+                        <h3>Client Constellation</h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Tag</th>
+                                        <th>Client ID</th>
+                                        <th>Status</th>
+                                        <th>Ping</th>
+                                        <th>Load</th>
+                                        <th>Guilds</th>
+                                        <th>Ready Since</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clients-body">
+                                    ${clientRows}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="insight-grid">
-                        <div class="insight-tile">
-                            <span class="insight-label">Load Balancing Pulse</span>
+
+                    <div class="operations-split">
+                        <div class="glass-card">
+                            <h3>Load Distribution</h3>
                             <div class="load-list" id="client-load-list">${clientLoadList}</div>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="section">
-                <div class="section-header">
-                    <h2>Broadcast Operations</h2>
-                    <span class="section-subtitle">تابع الجلسات الحالية وتاريخ البث</span>
-                </div>
-                <div class="dual-grid">
-                    <div>
-                        <h3 style="margin:0 0 10px 0;color:#CBD5F5;font-weight:600;">Active Broadcast Jobs</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Initiator</th>
-                                    <th>Members</th>
-                                    <th>Progress</th>
-                                    <th>Runtime</th>
-                                    <th>Preview</th>
-                                </tr>
-                            </thead>
-                            <tbody id="active-jobs-body">
-                                ${activeJobRows}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <h3 style="margin:0 0 10px 0;color:#CBD5F5;font-weight:600;">Recent Broadcast History</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Initiator</th>
-                                    <th>Members</th>
-                                    <th>Success / Failed</th>
-                                    <th>Duration</th>
-                                    <th>Preview</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recent-jobs-body">
-                                ${recentJobRows}
-                            </tbody>
-                        </table>
+                        <div class="glass-card">
+                            <h3>Active Broadcasts</h3>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Initiator</th>
+                                            <th>Members</th>
+                                            <th>Progress</th>
+                                            <th>Runtime</th>
+                                            <th>Preview</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="active-jobs-body">
+                                        ${activeJobRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="glass-card">
+                            <h3>Recent Broadcasts</h3>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Initiator</th>
+                                            <th>Members</th>
+                                            <th>Success / Fail</th>
+                                            <th>Duration</th>
+                                            <th>Preview</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-jobs-body">
+                                        ${recentJobRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -845,31 +928,31 @@ class DashboardServer {
             <section class="section">
                 <div class="section-header">
                     <h2>System Health</h2>
-                    <span class="section-subtitle">المقاييس الحيوية لمضيف البوت</span>
+                    <span class="section-subtitle">المقاييس الحيوية للمضيف</span>
                 </div>
-                <div class="insight-grid">
-                    <div class="insight-tile">
-                        <span class="insight-label">Node Version</span>
-                        <span class="insight-value" id="node-version">${escape(process.version)}</span>
+                <div class="panels-grid">
+                    <div class="holo-panel">
+                        <span class="panel-title">Node Version</span>
+                        <span class="panel-value" id="node-version">${escape(process.version)}</span>
                     </div>
-                    <div class="insight-tile">
-                        <span class="insight-label">Hostname</span>
-                        <span class="insight-value" id="hostname">${escape(os.hostname())}</span>
+                    <div class="holo-panel">
+                        <span class="panel-title">Hostname</span>
+                        <span class="panel-value" id="hostname">${escape(os.hostname())}</span>
                     </div>
-                    <div class="insight-tile">
-                        <span class="insight-label">Process Uptime</span>
-                        <span class="insight-value" id="process-uptime">${formatTime(process.uptime() * 1000)}</span>
+                    <div class="holo-panel">
+                        <span class="panel-title">Process Uptime</span>
+                        <span class="panel-value" id="process-uptime">${formatTime(process.uptime() * 1000)}</span>
                     </div>
-                    <div class="insight-tile">
-                        <span class="insight-label">Memory Usage</span>
-                        <span class="insight-value" id="memory-usage">${formatBytes(process.memoryUsage().heapUsed)} / ${formatBytes(process.memoryUsage().heapTotal)}</span>
+                    <div class="holo-panel">
+                        <span class="panel-title">Memory Usage</span>
+                        <span class="panel-value" id="memory-usage">${formatBytes(process.memoryUsage().heapUsed)} / ${formatBytes(process.memoryUsage().heapTotal)}</span>
                     </div>
                 </div>
             </section>
         </main>
 
         <footer class="page-footer">
-            Wick Studio Broadcast System • ${this.apiKey ? '🔐 API Key Protection Enabled' : '⚠️ API Key Not Configured'} • Crafted for elite operations
+            Wick Studio Broadcast System • ${this.apiKey ? '🔐 API Key Protection Enabled' : '⚠️ API Key Not Configured'} • Crafted for interstellar operations
         </footer>
     </div>
 
