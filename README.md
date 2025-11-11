@@ -24,6 +24,8 @@
 - **📱 Mobile-Friendly UI**: Clean and intuitive interface with buttons
 - **📄 Detailed Reports**: Comprehensive broadcast reports with success/failure statistics
 - **🛡️ Error Handling**: Robust error handling for failed message delivery
+- **🖥️ Live Operations Dashboard**: Monitor bots, broadcasts, and system health from a secured web dashboard
+- **🛡️ 24/7 Heartbeat Monitor**: Optional keep-alive pings to keep the bot active around the clock
 
 ## 🔧 Installation
 
@@ -64,7 +66,7 @@ module.exports = {
         ].filter(Boolean),
 
         defaultLanguage: 'ar', // ar | en لغة البوت
-        
+
         activity: {
             name: '📢 Wick Studio', // رسالة حالة البوت
             type: 'WATCHING', // PLAYING, STREAMING, LISTENING, WATCHING, COMPETING
@@ -76,8 +78,30 @@ module.exports = {
         broadcastRoleId: 'YOUR_BROADCAST_ROLE_ID',  // ايدي الرول اللي يستخدم عليها البوت
         reportChannelId: 'YOUR_REPORT_CHANNEL_ID'   // ايدي الروم اللي يرسل فيه البوت التقارير
     },
-    // Additional configuration...
-}
+    broadcast: {
+        cooldownTime: 1000,
+        memberCooldown: 100,
+        requestsPerSecond: 1
+    },
+    dashboard: {
+        enabled: true,
+        port: process.env.DASHBOARD_PORT || 3000,
+        apiKey: process.env.DASHBOARD_API_KEY || '',
+        refreshInterval: 5000
+    },
+    uptime: {
+        enabled: true,
+        pingUrl: process.env.HEARTBEAT_URL || '',
+        interval: 5 * 60 * 1000
+    },
+    colors: {
+        primary: '#5865F2',
+        success: '#57F287',
+        warning: '#FEE75C',
+        error: '#ED4245',
+        neutral: '#5D5D5D'
+    }
+};
 ```
 
 ## 🤖 Commands
@@ -97,6 +121,13 @@ The broadcast panel provides the following broadcast options:
 - **🟢 Online Members**: Send only to members who are currently online
 - **⭕ Offline Members**: Send only to members who are offline
 - **❌ Cancel**: Cancel the broadcast preparation
+- **🌐 Web Dashboard**: Visit `http://localhost:3000` (or your configured port) to monitor broadcasts in real time. When an API key is configured, append `?key=YOUR_KEY` or send the value in the `x-api-key` header.
+
+## 🕒 24/7 Operation
+
+- The built-in uptime service sends optional heartbeat requests (`uptime.pingUrl`) to hosting monitors such as UptimeRobot or FreshPing.
+- When no URL is provided the service still logs periodic heartbeats so you can verify the bot is alive.
+- Graceful shutdown handlers automatically stop the dashboard and heartbeat services on exit signals.
 
 ## 🏗️ Project Structure
 

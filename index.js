@@ -1,15 +1,19 @@
 const { Client, Intents } = require('discord.js');
 const config = require('./config');
-const { createLogger, drawBanner } = require('./src/utils/helpers');
+const { createLogger } = require('./src/utils/helpers');
 const languageManager = require('./src/models/LanguageManager');
 const broadcastManager = require('./src/models/BroadcastManager');
 const broadcastController = require('./src/controllers/BroadcastController');
+const DashboardServer = require('./src/dashboard/DashboardServer');
+const UptimeService = require('./src/utils/UptimeService');
 
 const logger = createLogger('Main');
 
 languageManager.setDefaultLanguage(config.bot.defaultLanguage);
 
 const clients = [];
+let dashboardServer = null;
+let uptimeService = null;
 const initializeClients = async () => {
     logger.info('Initializing broadcast clients...');
     
@@ -164,9 +168,21 @@ process.on('unhandledRejection', (reason, promise) => {
     logger.info('Starting Wick Broadcast system...');
     
     try {
-        await initializeClients();        
+        await initializeClients();
+
+        dashboardServer = new DashboardServer({
+            config,
+            broadcastManager,
+            languageManager,
+            clients
+        });
+        dashboardServer.start();
+
+        uptimeService = new UptimeService(config.uptime);
+        uptimeService.start();
+
         console.log(`
-██╗    ██╗██╗ ██████╗██╗  ██╗    ███████╗████████╗██╗   ██╗██████╗ ██╗ ██████╗ 
+██╗    ██╗██╗ ██████╗██╗  ██╗    ███████╗████████╗██╗   ██╗██████╗ ██╗ ██████╗
 ██║    ██║██║██╔════╝██║ ██╔╝    ██╔════╝╚══██╔══╝██║   ██║██╔══██╗██║██╔═══██╗
 ██║ █╗ ██║██║██║     █████╔╝     ███████╗   ██║   ██║   ██║██║  ██║██║██║   ██║
 ██║███╗██║██║██║     ██╔═██╗     ╚════██║   ██║   ██║   ██║██║  ██║██║██║   ██║
@@ -179,6 +195,8 @@ process.on('unhandledRejection', (reason, promise) => {
 🤖 ${languageManager.translate('system.activeClients')}: ${clients.length}
 ⚡ ${languageManager.translate('system.broadcastCapacity')}: ~${config.broadcast.requestsPerSecond * clients.length} ${languageManager.translate('system.membersPerSecond')}
 📨 ${languageManager.translate('system.commands')}: -bc, -language, -wick
+🖥️ Dashboard: ${config.dashboard.enabled ? `http://localhost:${config.dashboard.port}${config.dashboard.apiKey ? '?key=' + config.dashboard.apiKey : ''}` : languageManager.translate('system.disabled')}
+🛡️ Uptime Monitor: ${config.uptime.enabled ? (config.uptime.pingUrl ? 'External heartbeat active' : 'Internal heartbeat active') : languageManager.translate('system.disabled')}
 `);
         
     } catch (error) {
@@ -186,3 +204,17 @@ process.on('unhandledRejection', (reason, promise) => {
         process.exit(1);
     }
 })();
+
+const gracefulShutdown = (signal) => {
+    logger.warn(`Received ${signal}. Shutting down gracefully...`);
+
+    try {
+        dashboardServer?.stop?.();
+        uptimeService?.stop?.();
+    } finally {
+        process.exit(0);
+    }
+};
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
