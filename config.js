@@ -27,6 +27,19 @@ module.exports = {
         requestsPerSecond: 1 // لا تلعب فيها
     },
 
+    dashboard: {
+        enabled: true,
+        port: process.env.DASHBOARD_PORT || 3000,
+        apiKey: process.env.DASHBOARD_API_KEY || '',
+        refreshInterval: 5000
+    },
+
+    uptime: {
+        enabled: true,
+        pingUrl: process.env.HEARTBEAT_URL || '',
+        interval: 5 * 60 * 1000
+    },
+
     colors: {
         primary: '#5865F2',    // Discord Blue (used for standard messages)
         success: '#57F287',    // Green (used for successful operations)

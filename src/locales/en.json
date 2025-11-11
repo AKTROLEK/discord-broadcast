@@ -116,6 +116,7 @@
     "broadcastCapacity": "Broadcast Capacity",
     "membersPerSecond": "members/sec",
     "commands": "Available Commands",
+    "disabled": "Disabled",
     "activityStatus": "📢 Broadcasting messages"
   }
-} 
+}

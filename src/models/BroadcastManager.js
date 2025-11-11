@@ -1,6 +1,6 @@
 const config = require('../../config');
 const { MessageEmbed } = require('discord.js');
-const { sleep, createLogger } = require('../utils/helpers');
+const { sleep, createLogger, generateId, formatTime } = require('../utils/helpers');
 
 const logger = createLogger('BroadcastManager');
 
@@ -9,6 +9,16 @@ class BroadcastManager {
         this.clients = [];
         this.activeJobs = new Map();
         this.clientLoadMap = new Map();
+        this.completedJobs = [];
+        this.stats = {
+            startedAt: Date.now(),
+            totalBroadcasts: 0,
+            totalMembersTargeted: 0,
+            totalSuccess: 0,
+            totalFailures: 0,
+            lastBroadcastAt: null,
+            lastBroadcastMessage: null
+        };
     }
 
     async initialize(clients) {
@@ -96,20 +106,30 @@ class BroadcastManager {
             lastUIUpdate: Date.now(),
             processedCount: 0
         };
-        
+
         const totalClients = this.clients.length;
-        
+
         const validClients = this.clients.filter(client => client && client.user && client.user.id);
         const validClientCount = validClients.length;
-        
+
         if (validClientCount < totalClients) {
             logger.warn(`Only ${validClientCount} of ${totalClients} clients are valid and will be used for broadcasting`);
         }
-        
+
         if (validClientCount === 0) {
             logger.error('No valid clients available for broadcasting');
             return null;
         }
+
+        results.jobId = options.jobId || generateId();
+        const initiatorTag = interaction?.user?.tag || interaction?.member?.user?.tag || 'Unknown';
+        this.createJobRecord({
+            jobId: results.jobId,
+            totalMembers,
+            initiator: initiatorTag,
+            message,
+            clients: validClients
+        });
         
         const requestsPerSecond = config.broadcast.requestsPerSecond * validClientCount;
         const estimatedTimePerMember = (config.broadcast.cooldownTime + config.broadcast.memberCooldown) / validClientCount;
@@ -161,7 +181,7 @@ class BroadcastManager {
         await Promise.all(promises);
         
         logger.info(`Broadcast completed. Success: ${results.successCount}, Failed: ${results.failureCount}`);
-        
+
         return this.finalizeBroadcast({
             interaction,
             results,
@@ -258,6 +278,11 @@ class BroadcastManager {
                 results.successCount++;
                 
                 results.processedCount++;
+                this.updateActiveJob(results.jobId, {
+                    processed: results.processedCount,
+                    success: results.successCount,
+                    failure: results.failureCount
+                });
                 const progress = Math.floor((results.processedCount / results.totalMembers) * 100);
                 const now = Date.now();
 
@@ -274,9 +299,9 @@ class BroadcastManager {
             } catch (error) {
                 results.failureCount++;
                 results.failedMembers.push(`<@${member.id}>`);
-                
+
                 let errorReason = "Unknown error occurred";
-                
+
                 if (error.code === 50007) {
                     errorReason = "DMs are closed";
                 } else if (error.code === 50013) {
@@ -289,9 +314,14 @@ class BroadcastManager {
                 
                 logger.error(`Client ${client.user.tag} failed to send message to ${member.user?.tag || member.id}: ${errorReason}`);
                 results.processedCount++;
+                this.updateActiveJob(results.jobId, {
+                    processed: results.processedCount,
+                    success: results.successCount,
+                    failure: results.failureCount
+                });
             } finally {
                 this.decrementLoad(client);
-                
+
                 await sleep(config.broadcast.cooldownTime / this.clients.length);
             }
         }
@@ -356,10 +386,10 @@ class BroadcastManager {
                 const filledCount = Math.floor(percent / 10);
                 return '█'.repeat(filledCount) + '░'.repeat(10 - filledCount);
             };
-            
+
             const totalTime = Date.now() - results.startTime;
             const averageSpeed = Math.round(results.totalMembers / (totalTime / 1000));
-            
+
             const reportEmbed = this.createReportEmbed(results, message, lang, languages);
             
             if (config.server.reportChannelId) {
@@ -400,11 +430,138 @@ class BroadcastManager {
                 .setTimestamp();
 
             await interaction.editReply({ embeds: [completionEmbed] });
+
+            this.completeJob(results.jobId, {
+                results,
+                message,
+                duration: totalTime
+            });
         } catch (error) {
             logger.error('Failed to finalize broadcast:', error);
         }
-        
+
         return results;
+    }
+
+    createJobRecord({ jobId, totalMembers, initiator, message, clients }) {
+        const jobRecord = {
+            id: jobId,
+            status: 'running',
+            startedAt: Date.now(),
+            totalMembers,
+            processed: 0,
+            success: 0,
+            failure: 0,
+            progress: 0,
+            initiator,
+            messagePreview: message.length > 140 ? `${message.slice(0, 140)}...` : message,
+            clients: clients.map(client => ({
+                id: client.user.id,
+                tag: client.user.tag
+            })),
+            lastUpdate: Date.now()
+        };
+
+        this.activeJobs.set(jobId, jobRecord);
+        logger.info(`Registered broadcast job ${jobId} for ${totalMembers} members by ${initiator}`);
+        return jobRecord;
+    }
+
+    updateActiveJob(jobId, patch = {}) {
+        if (!jobId || !this.activeJobs.has(jobId)) {
+            return;
+        }
+
+        const existing = this.activeJobs.get(jobId);
+        const updated = {
+            ...existing,
+            ...patch
+        };
+
+        if (typeof updated.processed === 'number' && typeof updated.totalMembers === 'number' && updated.totalMembers > 0) {
+            updated.progress = Math.min(100, Math.round((updated.processed / updated.totalMembers) * 100));
+        }
+
+        updated.lastUpdate = Date.now();
+        this.activeJobs.set(jobId, updated);
+    }
+
+    completeJob(jobId, data) {
+        const now = Date.now();
+        const activeJob = this.activeJobs.get(jobId) || {};
+        const { results, message, duration = now - (activeJob.startedAt || Date.now()) } = data;
+
+        const completedJob = {
+            ...activeJob,
+            id: jobId,
+            status: 'completed',
+            finishedAt: now,
+            duration,
+            processed: results?.processedCount ?? activeJob.processed ?? 0,
+            success: results?.successCount ?? activeJob.success ?? 0,
+            failure: results?.failureCount ?? activeJob.failure ?? 0,
+            totalMembers: results?.totalMembers ?? activeJob.totalMembers ?? 0,
+            messagePreview: message?.length > 140 ? `${message.slice(0, 140)}...` : message || activeJob.messagePreview,
+            progress: 100
+        };
+
+        this.activeJobs.delete(jobId);
+        this.completedJobs.unshift(completedJob);
+        this.completedJobs = this.completedJobs.slice(0, 10);
+
+        if (results) {
+            this.stats.totalBroadcasts += 1;
+            this.stats.totalMembersTargeted += results.totalMembers;
+            this.stats.totalSuccess += results.successCount;
+            this.stats.totalFailures += results.failureCount;
+            this.stats.lastBroadcastAt = now;
+            this.stats.lastBroadcastMessage = message?.slice(0, 200) || completedJob.messagePreview;
+        }
+
+        logger.info(`Broadcast job ${jobId} completed. Success: ${completedJob.success}, Failed: ${completedJob.failure}`);
+        return completedJob;
+    }
+
+    getActiveJobs() {
+        return Array.from(this.activeJobs.values()).map(job => ({
+            ...job,
+            runtime: job.startedAt ? formatTime(Date.now() - job.startedAt) : '0s'
+        }));
+    }
+
+    getRecentJobs() {
+        return this.completedJobs.map(job => ({
+            ...job,
+            durationFormatted: formatTime(job.duration || 0)
+        }));
+    }
+
+    getStats() {
+        const uptime = Date.now() - this.stats.startedAt;
+        const totalAttempts = this.stats.totalSuccess + this.stats.totalFailures;
+        const successRate = totalAttempts === 0 ? 0 : Math.round((this.stats.totalSuccess / totalAttempts) * 100);
+
+        return {
+            startedAt: this.stats.startedAt,
+            uptime,
+            totalBroadcasts: this.stats.totalBroadcasts,
+            totalMembersTargeted: this.stats.totalMembersTargeted,
+            totalSuccess: this.stats.totalSuccess,
+            totalFailures: this.stats.totalFailures,
+            successRate,
+            lastBroadcastAt: this.stats.lastBroadcastAt,
+            lastBroadcastMessage: this.stats.lastBroadcastMessage
+        };
+    }
+
+    getDashboardState() {
+        return {
+            stats: this.getStats(),
+            activeJobs: this.getActiveJobs(),
+            recentJobs: this.getRecentJobs(),
+            clientLoad: Array.from(this.clientLoadMap.entries())
+                .map(([clientId, load]) => ({ clientId, load }))
+        };
     }
 
     createReportEmbed(results, message, lang, languages) {
