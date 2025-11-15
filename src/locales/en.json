@@ -118,5 +118,17 @@
     "commands": "Available Commands",
     "disabled": "Disabled",
     "activityStatus": "📢 Broadcasting messages"
+  },
+  "verification": {
+    "dmTitle": "🎉 You are now verified in {0}",
+    "dmDescription": "Welcome to the server! Please read the rules and choose the appropriate option below.",
+    "dmFooter": "Activation system by Wick Studio",
+    "passButton": "Pass",
+    "failButton": "Fail",
+    "passResponse": "✅ Your pass has been recorded. Enjoy your stay!",
+    "failResponse": "❌ Marked as not passed. Contact the staff for assistance.",
+    "notAllowed": "This button is only available to the message recipient.",
+    "logTitle": "Verification DM Interaction",
+    "logDescription": "**{0}** selected **{1}** on their activation DM."
   }
 }

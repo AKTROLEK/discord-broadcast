@@ -4,6 +4,7 @@ const { createLogger } = require('./src/utils/helpers');
 const languageManager = require('./src/models/LanguageManager');
 const broadcastManager = require('./src/models/BroadcastManager');
 const broadcastController = require('./src/controllers/BroadcastController');
+const verificationController = require('./src/controllers/VerificationController');
 const DashboardServer = require('./src/dashboard/DashboardServer');
 const UptimeService = require('./src/utils/UptimeService');
 
@@ -143,8 +144,10 @@ const setupEventListeners = (client) => {
     
     client.on('interactionCreate', async (interaction) => {
         if (clients.length > 0 && client !== clients[0]) return;
-        
+
         if (interaction.isButton()) {
+            const handled = await verificationController.handleButtonInteraction(interaction);
+            if (handled) return;
             await broadcastController.handleButtonInteraction(interaction);
             return;
         }
@@ -153,6 +156,11 @@ const setupEventListeners = (client) => {
             await broadcastController.handleSelectMenuInteraction(interaction);
             return;
         }
+    });
+
+    client.on('guildMemberUpdate', async (oldMember, newMember) => {
+        if (clients.length > 0 && client !== clients[0]) return;
+        await verificationController.handleGuildMemberUpdate(oldMember, newMember);
     });
 };
 
