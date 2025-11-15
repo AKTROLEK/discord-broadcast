@@ -27,6 +27,11 @@ module.exports = {
         requestsPerSecond: 1 // لا تلعب فيها
     },
 
+    verification: {
+        enabled: true, // فعل او طفّل رسائل التفعيل الخاصة
+        logChannelId: 'ID' // (اختياري) ايدي الروم اللي يستقبل تقارير الأزرار، استخدم reportChannelId إذا تركته فاضي
+    },
+
     dashboard: {
         enabled: true,
         port: process.env.DASHBOARD_PORT || 3000,
